@@ -19,7 +19,17 @@ In terms of operation, the system sends messages by first allowing users to send
 ![physical implementation of the circuit](https://github.com/user-attachments/assets/ee26187a-6dc9-4a57-ab20-e6b80b0a2e20)
 
                                                 Figure 3 Physical implementation of the circuit.
-  
+Components to realize this project:
+
+-ESP32 Module: Runs code, connects LoRa module via Bluetooth.  
+-Breadboard: Builds and organizes the circuit.  
+-Voltage Regulator: Converts 9V to 5V for ESP32; ESP32 steps down to 3.3V for LoRa.  
+-Battery Holder: Holds and connects the 9V battery.  
+-9V Battery: Powers the system.  
+-Wire Jumpers: Links components on the breadboard.  
+-Cellphone: Sends/receives messages via Bluetooth using an app.  
+-GPIO Breakout Board: Organizes ESP32 connections. 
+
  
 
 
