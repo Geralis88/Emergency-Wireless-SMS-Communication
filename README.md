@@ -81,7 +81,8 @@ Range distance test of 687.96m:
 
 Range distance test of 669.03m:
 
-![image](https://github.com/user-attachments/assets/e5f401c4-14f5-4c9d-831d-fd45c4b98b20)
+![image](https://github.com/user-attachments/assets/e760038e-8d79-4062-9565-33245045dc3e)
+
 
 References:
 
