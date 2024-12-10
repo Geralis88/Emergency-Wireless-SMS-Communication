@@ -86,20 +86,25 @@ Range distance test of 669.03m:
 
 References:
 
-[1].	R. B. Reese, Microprocessors: From Assembly Language to C Using the PIC18FXX2, Charles River Media, 2005.
+[1]. R. B. Reese, Microprocessors: From Assembly Language to C Using the PIC18FXX2, 
+      Charles River Media, 2005.
 
-[2].	Serial Bluetooth Terminal, [Online]. Available: https://play.google.com/store/apps/details?id=de.kai_morich.serial_bluetooth_terminal&hl=en-US. 
+[2]. Kai Morich, "Serial Bluetooth Terminal," [Online]. 
+      Available: https://play.google.com/store/apps/details?id=de.kai_morich.serial_bluetooth_terminal&hl=en-US. 
+     
+[3]. Arduino, "Arduino IDE 2.3.2 Simulator," [Online]. Available: https://www.arduino.cc/en/software.  
+      
+[4]. Circuitstate Electronics, "ESP32-DevKit-V1 Pinout," [Online]. 
+      Available: https://circuitstate.com/wp-content/uploads/2022/12/ESP32-DevKit-V1-Pinout-r0.1-CIRCUITSTATE-Electronics.pdf. 
 
-[3].	Arduino IDE 2.3.2 Simulator, [Online]. Available: https://www.arduino.cc/en/software. 
+[5]. Reyax Technology, "RYLR998 LoRa Module," [Online]. Available: https://reyax.com/products/rylr998/. 
+      
+[6]. Draw.io, "Draw.io Diagram Tool," [Online]. Available: https://draw.io. 
 
-[4].	ESP32 DevKit V1 Pinout, CircuitState, [Online]. Available: https://circuitstate.com/wp-content/uploads/2022/12/ESP32-DevKit-V1-Pinout-r0.1-CIRCUITSTATE-Electronics.pdf. 
+[7]. Fritzing, "Fritzing Project Tool," [Online]. Available: https://fritzing.org/. 
+       
+[8]. Circuit Digest, "Introduction to LoRa and LoRaWAN," [Online]. 
+      Available: https://circuitdigest.com/article/introduction-to-lora-and-lorawan-what-is-lora-and-how-does-it-work. 
 
-[5].	RYLR998 LoRa Module, Reyax, [Online]. Available: https://reyax.com/products/rylr998/. 
-
-[6].	Draw.io, [Online]. Available: https://draw.io. 
-
-[7].	Fritzing, [Online]. Available: https://fritzing.org. 
-
-[8].	Introduction to LoRa and LoRaWAN, Circuit Digest, [Online]. Available: https://circuitdigest.com/article/introduction-to-lora-and-lorawan-what-is-lora-and-how-does-it-work. 
 
 
