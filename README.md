@@ -49,7 +49,7 @@ In Mode 0, the system enables message dissemination to all nodes. Node #0 is des
 
 >>>>>>>![image](https://github.com/user-attachments/assets/ba620538-22c0-43fd-b417-589973a99739)
 
-               Figure 6 Message received from Node 3 in Node 1.
+               Figure 6 Message received from Node 3 in Node 2.
 In Mode 2, the system is set up for direct communication among designated nodes. Messages are transmitted in format 2, message, where "2" denotes the intended node. For instance, when a message is conveyed from Node 1 to Node 2, it is received precisely at Node 2, validating the system's capacity for effective, direct communication. This mode emphasizes the network's accuracy and dependability in transmitting messages to specified nodes.
 
 
