@@ -1,0 +1,162 @@
+#include <BluetoothSerial.h>
+#include <HardwareSerial.h>
+
+// Configuración de los pines RX y TX del módulo LoRa
+#define RXD2 16  // Conecta al TX del LoRa RYLR998
+#define TXD2 17  // Conecta al RX del LoRa RYLR998
+
+BluetoothSerial SerialBT; // Objeto para el Bluetooth Serial
+HardwareSerial LoRaSerial(2); // Serial2 para el módulo LoRa
+
+String incomingMessage = ""; // Mensaje recibido
+String outgoingMessage = ""; // Mensaje a enviar
+
+const int NODE_ADDRESS = 2; // Dirección de este nodo (cambiar a 2 o 3 para otros nodos)
+
+void setup() {
+  // Inicializar comunicación serial para depuración
+  Serial.begin(115200);
+  while (!Serial) {
+    delay(10);
+  }
+  Serial.println("Inicializando...");
+
+  // Inicializar Bluetooth
+  if (!SerialBT.begin("ESP32-LoRa_" + String(NODE_ADDRESS))) { // Nombre del dispositivo Bluetooth
+    Serial.println("Error al iniciar Bluetooth");
+    while (1);
+  }
+  Serial.println("Bluetooth inicializado. Conecta usando 'ESP32-LoRa_" + String(NODE_ADDRESS) + "'");
+
+  // Configuración de Serial2 para LoRa
+  LoRaSerial.begin(115200, SERIAL_8N1, RXD2, TXD2);
+
+  // Configurar el módulo LoRa
+  configureLoRa();
+}
+
+void loop() {
+  // Leer mensajes enviados desde la app Bluetooth Terminal
+  if (SerialBT.available()) {
+    outgoingMessage = SerialBT.readStringUntil('\n'); // Leer desde Bluetooth Terminal
+    sendLoRaMessage(outgoingMessage);
+  }
+
+  // Leer mensajes recibidos desde LoRa
+  if (LoRaSerial.available()) {
+    String rawMessage = LoRaSerial.readStringUntil('\n'); // Leer desde el módulo LoRa
+    Serial.println("Mensaje crudo recibido: " + rawMessage); // Mostrar mensaje bruto para depuración
+    String cleanMessage = parseLoRaMessage(rawMessage);   // Procesar y limpiar el mensaje
+    if (cleanMessage != "") {
+      SerialBT.println("Mensaje recibido: " + cleanMessage); // Mostrar mensaje limpio en el celular
+    }
+  }
+}
+
+// Configurar el módulo LoRa RYLR998
+void configureLoRa() {
+  // Establecer configuración del módulo
+  LoRaSerial.println("AT+MODE=0");  // Modo transceptor
+  delay(100);
+  LoRaSerial.println("AT+ADDRESS=" + String(NODE_ADDRESS));  // Dirección del nodo
+  delay(100);
+  LoRaSerial.println("AT+NETWORKID=22");  // ID de red (igual en todos los nodos)
+  delay(100);
+  LoRaSerial.println("AT+BAND=915000000");  // Frecuencia en Hz
+  delay(100);
+
+  Serial.println("Módulo LoRa configurado.");
+}
+
+// Enviar un mensaje a otro nodo LoRa
+void sendLoRaMessage(String message) {
+  if (message.length() > 0) {
+    SerialBT.println("Formato: DESTINATARIO,MENSAJE");
+    int delimiterIndex = message.indexOf(',');
+
+    // Validar si el mensaje tiene el delimitador y sigue el formato esperado
+    if (delimiterIndex != -1) {
+      String recipientAddress = message.substring(0, delimiterIndex); // Extraer dirección destino
+      String actualMessage = message.substring(delimiterIndex + 1);  // Extraer el mensaje
+
+      // Validar que el destinatario es un número entre 0 y 3
+      bool isNumeric = true;
+      for (int i = 0; i < recipientAddress.length(); i++) {
+        if (!isDigit(recipientAddress[i])) {
+          isNumeric = false;
+          break;
+        }
+      }
+
+      if (isNumeric) {
+        int recipient = recipientAddress.toInt();
+        if (recipient >= 0 && recipient <= 3) {
+          // Enviar el mensaje al destinatario válido
+          LoRaSerial.print("AT+SEND=" + recipientAddress + ",");
+          LoRaSerial.print(actualMessage.length());
+          LoRaSerial.print(",");
+          LoRaSerial.print(actualMessage);
+          LoRaSerial.println();
+          Serial.println("Mensaje enviado al nodo " + recipientAddress + ": " + actualMessage);
+        } else {
+          Serial.println("Dirección del nodo inválida: " + recipientAddress);
+          SerialBT.println("Error: Dirección del nodo inválida. Debe ser 0, 1, 2 o 3.");
+        }
+      } else {
+        Serial.println("Dirección del nodo no es numérica: " + recipientAddress);
+        SerialBT.println("Error: Dirección del nodo no es numérica.");
+      }
+    } else {
+      Serial.println("Formato incorrecto. Usa DESTINATARIO,MENSAJE");
+      SerialBT.println("Error: Formato incorrecto. Usa DESTINATARIO,MENSAJE.");
+    }
+  }
+}
+
+// Procesar y limpiar el mensaje recibido desde LoRa
+String parseLoRaMessage(String rawMessage) {
+  if (rawMessage.startsWith("+RCV=")) {
+    // Buscar comas en la cadena
+    int firstComma = rawMessage.indexOf(',');       // Encuentra la primera coma
+    int secondComma = rawMessage.indexOf(',', firstComma + 1); // Segunda coma
+    int thirdComma = rawMessage.indexOf(',', secondComma + 1); // Tercera coma
+
+    // Verifica que todas las comas existen y están en posiciones válidas
+    if (firstComma != -1 && secondComma != -1 && thirdComma != -1) {
+      // Extraer la dirección del remitente
+      String senderAddress = rawMessage.substring(5, firstComma);
+      senderAddress.trim(); // Eliminar espacios en blanco, \r, \n
+
+      // Validar que la dirección es un número
+      bool isNumeric = true;
+      for (int i = 0; i < senderAddress.length(); i++) {
+        if (!isDigit(senderAddress[i])) {
+          isNumeric = false;
+          break;
+        }
+      }
+
+      if (!isNumeric) {
+        Serial.println("Dirección del nodo inválida: " + senderAddress);
+        return ""; // Dirección inválida
+      }
+
+      // Convertir la dirección a un número entero
+      int sender = senderAddress.toInt();
+      if (sender < 0 || sender > 3) {
+        Serial.println("Dirección del nodo inválida: " + senderAddress);
+        return ""; // Dirección fuera de rango válido
+      }
+
+      // Extraer el contenido del mensaje
+      String messageContent = rawMessage.substring(secondComma + 1, thirdComma);
+      messageContent.trim(); // Eliminar espacios en blanco, \r, \n
+
+      // Formatear el mensaje recibido para mostrarlo
+      return "De nodo " + senderAddress + ": " + messageContent;
+    } else {
+      Serial.println("Formato del mensaje LoRa no válido: " + rawMessage);
+    }
+  }
+  return ""; // Devuelve vacío si no es un mensaje válido
+}
