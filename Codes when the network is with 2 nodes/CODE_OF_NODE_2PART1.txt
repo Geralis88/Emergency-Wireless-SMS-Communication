@@ -1,0 +1,94 @@
+#include <BluetoothSerial.h>
+#include <HardwareSerial.h>
+
+// Configuración de los pines RX y TX del módulo LoRa
+#define RXD2 16  // Conecta al TX del LoRa RYLR998
+#define TXD2 17  // Conecta al RX del LoRa RYLR998
+
+BluetoothSerial SerialBT; // Objeto para el Bluetooth Serial
+HardwareSerial LoRaSerial(2); // Serial2 para el módulo LoRa
+
+String incomingMessage = ""; // Mensaje recibido
+String outgoingMessage = ""; // Mensaje a enviar
+
+void setup() {
+  // Inicializar comunicación serial para depuración
+  Serial.begin(115200);
+  while (!Serial) {
+    delay(10);
+  }
+  Serial.println("Inicializando...");
+
+  // Inicializar Bluetooth
+  if (!SerialBT.begin("ESP32-LoRa_2")) { // Nombre del dispositivo Bluetooth
+    Serial.println("Error al iniciar Bluetooth");
+    while (1);
+  }
+  Serial.println("Bluetooth inicializado. Conecta usando 'ESP32-LoRa_2'");
+
+  // Configuración de Serial2 para LoRa
+  LoRaSerial.begin(115200, SERIAL_8N1, RXD2, TXD2);
+
+  // Configurar el módulo LoRa
+  configureLoRa();
+}
+
+void loop() {
+  // Leer mensajes enviados desde la app Bluetooth Terminal
+  if (SerialBT.available()) {
+    outgoingMessage = SerialBT.readStringUntil('\n'); // Leer desde Bluetooth Terminal
+    sendLoRaMessage(outgoingMessage);
+  }
+
+  // Leer mensajes recibidos desde LoRa
+  if (LoRaSerial.available()) {
+    String rawMessage = LoRaSerial.readStringUntil('\n'); // Leer desde el módulo LoRa
+    String cleanMessage = parseLoRaMessage(rawMessage);   // Procesar y limpiar el mensaje
+    if (cleanMessage != "") {
+      SerialBT.println("Mensaje recibido: " + cleanMessage); // Mostrar mensaje limpio en el celular
+    }
+  }
+}
+
+// Configurar el módulo LoRa RYLR998
+void configureLoRa() {
+  // Establecer frecuencia (ejemplo: 915 MHz, ajusta según tu región)
+  LoRaSerial.println("AT+MODE=0");  // Modo transceptor
+  delay(100);
+  LoRaSerial.println("AT+ADDRESS=2");  // Dirección del nodo (cambia en el segundo módulo a 2)
+  delay(100);
+  LoRaSerial.println("AT+NETWORKID=22");  // ID de red (igual en ambos módulos)
+  delay(100);
+  LoRaSerial.println("AT+BAND=915000000");  // Frecuencia en Hz
+  delay(100);
+
+  Serial.println("Módulo LoRa configurado.");
+}
+
+// Enviar un mensaje al otro módulo LoRa
+void sendLoRaMessage(String message) {
+  if (message.length() > 0) {
+    LoRaSerial.print("AT+SEND=1,"); // Enviar al nodo 2 (ajusta si intercambias direcciones)
+    LoRaSerial.print(message.length());
+    LoRaSerial.print(",");
+    LoRaSerial.print(message);
+    LoRaSerial.println();
+    Serial.println("Mensaje enviado: " + message);
+  }
+}
+
+// Procesar y limpiar el mensaje recibido desde LoRa
+String parseLoRaMessage(String rawMessage) {
+  if (rawMessage.startsWith("+RCV=")) {
+    int firstComma = rawMessage.indexOf(',');       // Encuentra la primera coma
+    int secondComma = rawMessage.indexOf(',', firstComma + 1); // Segunda coma
+    int thirdComma = rawMessage.indexOf(',', secondComma + 1); // Tercera coma
+    if (thirdComma != -1) {
+      // Extraer el contenido del mensaje
+      String messageContent = rawMessage.substring(secondComma + 1, thirdComma);
+      messageContent.trim(); // Eliminar espacios en blanco, \r, \n
+      return messageContent;
+    }
+  }
+  return ""; // Devuelve vacío si no es un mensaje válido
+}
