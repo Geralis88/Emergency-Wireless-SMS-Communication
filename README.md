@@ -1,4 +1,4 @@
-
+Authors: Geralis Del Valle Nieves and Bill Pérez Moyet
 # Emergency Wireless SMS Communication System
 
 This project uses ESP32 microcontrollers, RYLR998 modules, and LoRa technology to construct an emergency wireless communication system. It is intended to offer reliable, two-way communication in disaster-affected areas when conventional networks, such the internet and cellphone systems, are not accessible.
